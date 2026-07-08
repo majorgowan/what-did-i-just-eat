@@ -1,0 +1,9 @@
+<div>
+    <form action="/" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="textareawrapper">
+            <textarea name="text" id="dictated_text" rows="6" cols="50"><%- (locals.text) ? text : "" %></textarea>
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+</div>

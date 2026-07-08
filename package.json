@@ -1,0 +1,30 @@
+{
+  "name": "nutrition",
+  "version": "1.0.0",
+  "description": "AI enabled nutrition analyzer",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mark Fruman",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/majorgowan/nutrition/"
+  },
+  "dependencies": {
+    "@cerebras/cerebras_cloud_sdk": "^1.64.1",
+    "@dr.pogodin/csurf": "^1.17.0",
+    "connect-mongo": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.2",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "json-llm-repair": "^0.1.5",
+    "mongodb": "^7.2.0"
+  },
+  "engines": {
+    "node": "24.16.0"
+  }
+}
