@@ -1,0 +1,22 @@
+<div>
+    <h4>
+        Search Results:
+    </h4>
+    <div>
+        <form action="analyze" method="POST">
+            <% for ([ii, choices] of lookup.entries()) { %>
+                <div>
+                    <select name="food_<%= ii %>" id="select_<%= ii %>">
+                        <% for (choice of choices) { %>
+                            <option value="<%= choice.fdcId %>" <%= choice.selected ? "selected" : "" %>>
+                                <%= choice.description %>
+                            </option>
+                        <% } %>
+                    </select>
+                </div>
+            <% } %>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit">Analyze</button>
+        </form>
+    </div>
+</div>

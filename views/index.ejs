@@ -4,18 +4,21 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Nutrition!!</title>
+    <title>What did I just eat??</title>
 </head>
 
 <body>
 
 <div>
-    <h1>Nutrition!!</h1>
+    <h1>What did I just eat??</h1>
 </div>
 
 <%- include("partials/mainform.ejs") %>
-<% if (locals.analysis) { %>
-    <%- include("partials/analysis.ejs") %>
+<% if (locals.processed) { %>
+    <%- include("partials/processed.ejs") %>
+<% } %>
+<% if (locals.lookup) { %>
+    <%- include("partials/lookup.ejs") %>
 <% } %>
 
 </body>

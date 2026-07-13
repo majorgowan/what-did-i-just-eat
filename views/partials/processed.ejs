@@ -1,0 +1,20 @@
+<div>
+    <h4>
+        Breakdown:
+    </h4>
+    <div>
+        <table>
+            <% for (component of processed.components) { %>
+            <tr>
+                <td><%= component.amount %></td>
+                <td><%= component.unit %></td>
+                <td><%= component.query %></td>
+            </tr>
+            <% } %>
+        </table>
+        <form action="lookup" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit">Lookup</button>
+        </form>
+    </div>
+</div>

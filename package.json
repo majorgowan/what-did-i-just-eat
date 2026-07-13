@@ -1,5 +1,5 @@
 {
-  "name": "nutrition",
+  "name": "what-did-i-just-eat",
   "version": "1.0.0",
   "description": "AI enabled nutrition analyzer",
   "main": "app.js",

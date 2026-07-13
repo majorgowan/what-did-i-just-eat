@@ -1,14 +1,14 @@
 <div>
     <h4>
-        Analysis:
+        Search Results:
     </h4>
     <div>
         <table>
-            <% for ([key, value] of Object.entries(analysis)) { %>
-            <tr>
-                <td><%= key %></td>
-                <td><%= value %></td>
-            </tr>
+            <% for (item of lookup) { %>
+                <tr>
+                    <td><%= item.fdcId %></td>
+                    <td><%= item.description %></td>
+                </tr>
             <% } %>
         </table>
     </div>
