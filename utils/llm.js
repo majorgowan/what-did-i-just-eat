@@ -1,14 +1,26 @@
 const Cerebras = require("@cerebras/cerebras_cloud_sdk");
+const { Groq } = require("groq-sdk");
 
-const client = new Cerebras({
-    "apiKey": process.env.CEREBRAS_API_KEY,
-    "maxRetries": 8
-});
+let llmClient;
+let llmModel;
+if (process.env.AI_PLATFORM === "groq") {
+    llmClient = new Groq({
+        "apiKey": process.env.GROQ_API_KEY,
+    });
+    llmModel = process.env.GROQ_MODEL;
+} else {
+    llmClient = new Cerebras({
+        "apiKey": process.env.CEREBRAS_API_KEY,
+        "maxRetries": 8
+    });
+    llmModel = process.env.CEREBRAS_MODEL;
+}
 
-async function askCerebras(content, response_format = null, temperature = 0.1, max_completion_tokens = 2048) {
+
+async function askLlm(content, response_format = null, temperature = 0.1, max_completion_tokens = 2048) {
     try {
-        const response = await client.chat.completions.create({
-            model: process.env.CEREBRAS_MODEL,
+        const response = await llmClient.chat.completions.create({
+            model: llmModel,
             max_completion_tokens: max_completion_tokens,
             temperature: temperature,
             stream: false,
@@ -87,7 +99,7 @@ async function analyze(text, verbose=false) {
 
     if (verbose) console.log(prompt);
 
-    return await askCerebras(prompt, response_format);
+    return await askLlm(prompt, response_format);
 }
 
 

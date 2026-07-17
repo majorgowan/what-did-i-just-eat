@@ -21,6 +21,7 @@
     "ejs": "^6.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "groq-sdk": "^1.3.0",
     "json-llm-repair": "^0.1.5",
     "mongodb": "^7.2.0"
   },

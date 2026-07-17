@@ -1,7 +1,7 @@
 const express = require("express");
 const { connectToDatabase, toId } = require("../utils/db");
 const { searchFoods, lookupFoods } = require("../utils/usda");
-const { analyze } = require("../utils/cerebras");
+const { analyze } = require("../utils/llm");
 const { parseFromLLM } = require("json-llm-repair");
 
 
