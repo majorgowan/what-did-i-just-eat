@@ -3,6 +3,7 @@ const { connectToDatabase, toId } = require("../utils/db");
 const { searchFoods, lookupFoods } = require("../utils/usda");
 const { analyze } = require("../utils/llm");
 const { parseFromLLM } = require("json-llm-repair");
+const { processText } = require("../utils/pipeline");
 
 
 const router = express.Router();
@@ -13,7 +14,17 @@ router.get("/", async (req, res) => {
     });
 });
 
+
 router.post("/", async (req, res) => {
+    const text = req.body.text;
+
+    const items = await processText(text);
+
+    return res.json(items);
+});
+
+
+router.post("/old", async (req, res) => {
     // get text from form and submit it to Cerebras
     const text = req.body.text;
     req.session.rawText = text;

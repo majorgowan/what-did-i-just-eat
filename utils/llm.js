@@ -1,5 +1,6 @@
 const Cerebras = require("@cerebras/cerebras_cloud_sdk");
 const { Groq } = require("groq-sdk");
+const jsonToMarkdown = require("json-to-markdown-table");
 
 let llmClient;
 let llmModel;
@@ -56,7 +57,10 @@ async function analyze(text, verbose=false) {
         Convert the text into a LIST OF QUERY STRINGS designed to submit to the USDA FoodData Central API
         to retrieve nutritional information about the meal.
         
-        Be very explicit with the query: specify characteristics of the most likely item (e.g. for butter, specify DAIRY and SALTED)
+        Be very explicit with the query: specify characteristics of the most likely item (e.g. for butter, specify 'dairy' and 'salted)
+        
+        Note that each query is INDEPENDENT, so include all useful information in each query, for example: 
+        a meal of 'beef hot dog on white roll' might be broken down into 'beef frankfurter sausage' and 'white bread hot dog roll or bun'
         
         The response should follow the provided JSON schema.  Specify the most natural or typical UNIT for each amount.
         
@@ -103,4 +107,74 @@ async function analyze(text, verbose=false) {
 }
 
 
-module.exports = { analyze };
+async function select(text, lookup, verbose=false) {
+    // process the USDA query results
+
+    let lookupTableString = jsonToMarkdown(lookup, Object.keys(lookup[0]));
+    console.log(lookupTableString);
+
+    const prompt = `
+        The following is a text describing a MEAL or DRINK or SNACK:
+        
+        ==================
+        ${text}
+        ==================
+        
+        The text was used to generate a LIST OF QUERY STRINGS designed to submit to the USDA FoodData Central API.
+        
+        The following table summarizes the query results from the USDA API:
+        
+        ${lookupTableString}
+        
+        Please select from the query results a list of item ids (fdcId), descriptions (description), and amounts in grams that BEST REPRESENTS THE TEXT. 
+        
+        In general select one item for each query string but if there are redundancies in the search results, pick only the best match.
+        
+        Prefer generic items (e.g. with dataType 'SR Legacy' or 'Foundation') to branded items unless the query specified a brand name.
+        
+        Emphasize the nutritional characteristic of the item over the form, for example 'white bread' is more representative of a 'white bread roll' than a 'whole wheat roll'.
+        
+        The response should follow the provided JSON schema.
+    `;
+
+    const response_format = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "selected",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "fdcItems": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "fdcId": {
+                                    "type": "number"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "amount_in_grams": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": ["fdcId", "description", "amount_in_grams"],
+                            "additionalProperties": false
+                        },
+                    },
+                },
+                "required": ["fdcItems"],
+                "additionalProperties": false
+            },
+            "strict": true
+        }
+    };
+
+    if (verbose) console.log(prompt);
+
+    return await askLlm(prompt, response_format);
+}
+
+
+module.exports = { analyze, select };
