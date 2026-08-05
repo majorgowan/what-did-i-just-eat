@@ -1,5 +1,30 @@
+const { chuckArray, chunkArray} = require("./utils");
+
+
 const searchUrl = `${process.env.USDA_API_URL}foods/search?api_key=${process.env.USDA_API_KEY}`;
 const foodsUrl = `${process.env.USDA_API_URL}foods/?api_key=${process.env.USDA_API_KEY}`;
+
+
+const nutrients = {
+    "208": {"name": "kcal", "scale": 0, "detailLevel": 1}, // energy (kcal)
+    "203": {"name": "protein (g)", "scale": 1, "detailLevel": 1}, // protein (g)
+    "204": {"name": "fat (g)", "scale": 1, "detailLevel": 1}, // total fat (g)
+    "291": {"name": "fibre (g)", "scale": 1, "detailLevel": 1}, // total dietary fibre (g)
+    "205": {"name": "carbohydrates (g)", "scale": 0, "detailLevel": 1}, // carbohydrates (g)
+    "269": {"name": "sugar (g)", "scale": 1, "detailLevel": 1}, // total sugar (g)
+    "307": {"name": "sodium (mg)", "scale": 0, "detailLevel": 1}, // sodium (mg)
+    "601": {"name": "cholesterol (mg)", "scale": 0, "detailLevel": 1}, // cholesterol (mg)
+    "209": {"name": "starch (g)", "scale": 1, "detailLevel": 2}, // starch (g)
+    "301": {"name": "calcium (mg)", "scale": 0, "detailLevel": 2}, // calcium (mg)
+    "303": {"name": "iron (mg)", "scale": 1, "detailLevel": 2}, // iron (mg)
+    "306": {"name": "potassium (mg)", "scale": 0, "detailLevel": 2}, // potassium (mg)
+    "401": {"name": "Vitamin C (mg)", "scale": 1, "detailLevel": 2}, // Vitamin C (mg)
+    "606": {"name": "saturated fat (g)", "scale": 1, "detailLevel": 2}, // total saturated fat (g)
+    "605": {"name": "trans fat (g)", "scale": 1, "detailLevel": 2} // trans fat (g)
+};
+
+const nutrientOrder = ["208", "203", "204", "291", "205", "269", "307", "601",
+                               "209", "301", "303", "306", "401", "606", "605"];
 
 async function searchFoods(query, dataType=["Foundation"], number=3) {
     try {
@@ -26,31 +51,12 @@ async function searchFoods(query, dataType=["Foundation"], number=3) {
     }
 }
 
-async function lookupFoods(fdcIds) {
-
-    const nutrients = [
-        "208", // energy (kcal)
-        "203", // protein (g)
-        "204", // total fat (g)
-        "606", // total saturated fat (g)
-        "605", // trans fat (g)
-        "601", // cholesterol (mg)
-        "956", // carbohydrates (g)
-        "291", // total dietary fibre (g)
-        "269", // total sugar (g)
-        "209", // starch (g)
-        "301", // calcium (mg)
-        "303", // iron (mg)
-        "306", // potassium (mg)
-        "307", // sodium (mg)
-        "401" // Vitamin C (mg)
-    ];
-
+async function lookupBatch(fdcIds) {
     try {
         const reqBody = JSON.stringify({
-           "fdcIds": fdcIds,
-           "nutrients": nutrients,
-           "format": "abridged"
+            "fdcIds": fdcIds,
+            "nutrients": Object.keys(nutrients),
+            "format": "abridged"
         });
         console.log(reqBody);
 
@@ -67,7 +73,21 @@ async function lookupFoods(fdcIds) {
     } catch (error) {
         console.error("Fetch error:", error);
     }
+
 }
 
 
-module.exports = { searchFoods, lookupFoods };
+async function lookupFoods(fdcIds) {
+    // batch the fdcIds into groups of 18 (limit on USDA API is 20)
+    const fdcIdBatches = chunkArray(fdcIds, 18);
+    let data = [];
+
+    for (const fdcIdBatch of fdcIdBatches) {
+        const batch = await lookupBatch(fdcIdBatch);
+        data = [...data, ...batch];
+    }
+    return data;
+}
+
+
+module.exports = { searchFoods, lookupFoods, nutrients, nutrientOrder };

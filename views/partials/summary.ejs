@@ -1,0 +1,29 @@
+<div>
+    <h4>
+        Breakdown:
+    </h4>
+    <div>
+        <table>
+            <thead>
+                <th>fdcId</th>
+                <th>Description</th>
+                <th>Amount in Grams</th>
+                <% for (nutrientId of nutrientOrder) { %>
+                    <th class="nutrient-<%= nutrients[nutrientId].detailLevel %>"><%- nutrients[nutrientId].name %></th>
+                <% } %>
+            </thead>
+            <tbody>
+                <% for (component of Object.keys(summary)) { %>
+                    <tr>
+                        <td><%= summary[component].fdcId %></td>
+                        <td><%= summary[component].description %></td>
+                        <td><%= summary[component].amount_in_grams %></td>
+                        <% for (nutrientId of nutrientOrder) { %>
+                            <td class="nutrient-<%= nutrients[nutrientId].detailLevel %>"><%- (nutrientId in summary[component]) ? summary[component][nutrientId].portionAmount : "" %></td>
+                        <% } %>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>

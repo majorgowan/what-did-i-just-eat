@@ -62,7 +62,7 @@ async function analyze(text, verbose=false) {
         Note that each query is INDEPENDENT, so include all useful information in each query, for example: 
         a meal of 'beef hot dog on white roll' might be broken down into 'beef frankfurter sausage' and 'white bread hot dog roll or bun'
         
-        The response should follow the provided JSON schema.  Specify the most natural or typical UNIT for each amount.
+        The response should follow the provided JSON schema.  Specify the most natural or typical UNIT for each amount (one of 'g', 'ml', 'pieces').
         
     `;
 
@@ -130,11 +130,13 @@ async function select(text, lookup, verbose=false) {
         
         In general select one item for each query string but if there are redundancies in the search results, pick only the best match.
         
-        Prefer generic items (e.g. with dataType 'SR Legacy' or 'Foundation') to branded items unless the query specified a brand name.
+        All else being equal, prefer items with more complete nutritional data (numberOfNutrients) and more recent publication date.
+        
+        All else being equal, prefer generic items (e.g. with dataType 'SR Legacy') to branded items (dataType 'Branded') unless the query specified a brand name.
         
         Emphasize the nutritional characteristic of the item over the form, for example 'white bread' is more representative of a 'white bread roll' than a 'whole wheat roll'.
         
-        The response should follow the provided JSON schema.
+        The response should follow the provided JSON schema.  Include the original query string and description from the input table.
     `;
 
     const response_format = {
@@ -152,6 +154,9 @@ async function select(text, lookup, verbose=false) {
                                 "fdcId": {
                                     "type": "number"
                                 },
+                                "query": {
+                                    "type": "string"
+                                },
                                 "description": {
                                     "type": "string"
                                 },
@@ -159,7 +164,7 @@ async function select(text, lookup, verbose=false) {
                                     "type": "number"
                                 }
                             },
-                            "required": ["fdcId", "description", "amount_in_grams"],
+                            "required": ["fdcId", "query", "description", "amount_in_grams"],
                             "additionalProperties": false
                         },
                     },

@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/style.css" rel="stylesheet">
     <title>What did I just eat??</title>
 </head>
 
@@ -14,11 +15,8 @@
 </div>
 
 <%- include("partials/mainform.ejs") %>
-<% if (locals.processed) { %>
-    <%- include("partials/processed.ejs") %>
-<% } %>
-<% if (locals.lookup) { %>
-    <%- include("partials/lookup.ejs") %>
+<% if (locals.summary) { %>
+    <%- include("partials/summary.ejs") %>
 <% } %>
 
 </body>
