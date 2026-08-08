@@ -25,9 +25,14 @@ async function parseInput(text) {
 
 async function lookupQueries(queryList) {
     // search USDA database using supplied queries
-    // return a flattened array of all results for all queries
+    // return a flattened array of all results for all queries and an array of query-result groups
     let lookup = [];
+    const groups = []
     for (component of queryList.components) {
+        const group = {
+            "query": component.query,
+            "fdcIds": []
+        }
         const subLookup = []
         for (const dataType of [["SR Legacy"], ["Branded"]]) {
             const number = (dataType === "Branded") ? 2 : 4;
@@ -43,11 +48,16 @@ async function lookupQueries(queryList) {
                     }
                 })
             );
+            group.fdcIds = [...group.fdcIds, ...data.foods.map((food) => [food.fdcId, food.description])];
         }
         lookup = [...lookup, ...subLookup.flat()];
+        groups.push(group);
     }
 
-    return lookup;
+    return {
+        "lookup": lookup,
+        "queryGroups": groups
+    };
 }
 
 
@@ -58,18 +68,8 @@ async function refineLookup(text, lookup) {
         const content = rawResponse.choices[0].message.content;
         const refined = parseFromLLM(content, {"mode": "repair"});
 
-        // add in alternates for each selected item
-        refined.fdcItems = refined.fdcItems.map(item => ({
-            ...item,
-            "alternates": lookup
-                .filter(lookupItem => lookupItem.query === item.query)
-                .map(lookupItem => ({
-                    "fdcId": lookupItem.fdcId,
-                    "description": lookupItem.description
-                }))
-        }));
-
         return refined;
+
     } catch (err) {
         if (err.status === 429) {
             console.error(err);
@@ -110,7 +110,10 @@ async function fetchNutrition(fdcIdList) {
 
 function summarize(nutrition, items) {
     // scale the nutrients by the portion sizes and produce summary
-    const summary = {};
+    const summary = {
+        "itemized": [],
+        "totals": {}
+    };
 
     for (let ii = 0; ii < items.length; ii++) {
         const portionSize = Number(items[ii].amount_in_grams);
@@ -124,10 +127,9 @@ function summarize(nutrition, items) {
             })
         );
         const itemNutrition = {
-            "description": items[ii].description,
+            "description": nutritionData.description,
             "amount_in_grams": items[ii].amount_in_grams,
-            "fdcId": items[ii].fdcId,
-            "alternates": items[ii].alternates
+            "fdcId": items[ii].fdcId
         };
         for (const [nutrientId, nutrient] of Object.entries(nutrients)) {
             if (nutrientId in foodNutrientMap) {
@@ -137,9 +139,20 @@ function summarize(nutrition, items) {
                     "portionAmount": (portionSize / 100 * foodNutrientMap[nutrientId])
                         .toFixed(nutrient.scale)
                 };
+
+                const cleanValue = Number(portionSize / 100 * foodNutrientMap[nutrientId]);
+                if (nutrientId in summary.totals) {
+                    summary.totals[nutrientId] += cleanValue;
+                } else {
+                    summary.totals[nutrientId] = cleanValue;
+                }
             }
         }
-        summary[items[ii].fdcId] = itemNutrition;
+        summary.itemized.push(itemNutrition);
+    }
+
+    for (nutrientId in summary.totals) {
+        summary.totals[nutrientId] = (summary.totals[nutrientId]).toFixed(nutrients[nutrientId].scale);
     }
 
     return summary;
@@ -149,11 +162,11 @@ function summarize(nutrition, items) {
 
 async function processText(text) {
     const queryList = await parseInput(text);
-    console.log(queryList);
-    const lookup = await lookupQueries(queryList);
-    console.log(lookup);
+    // console.log(queryList);
+    const { lookup, queryGroups } = await lookupQueries(queryList);
+    // console.log(lookup);
     const nutrition = await fetchNutrition(lookup.map(item => item.fdcId));
-    console.log(nutrition);
+    // console.log(nutrition);
     // TODO: fetch nutrition for all candidates
     //       - extract long list of fdcIds (from array of arrays in "lookup")
     //       - refactor refineLookup so that groq uses more information to refine items list (such as completeness)
@@ -167,12 +180,12 @@ async function processText(text) {
         "numberOfNutrients": nutrition[index].foodNutrients.length,
         "publicationDate": nutrition[index].publicationDate
     }));
-    const refined = await refineLookup(text, enhancedLookup);
-    console.log(JSON.stringify(refined, null, 2));
-    const summary = await summarize(nutrition, refined.fdcItems);
-    console.log(JSON.stringify(summary, null, 2));
 
-    return summary;
+    return {
+        "lookup": enhancedLookup,
+        "queryGroups": queryGroups,
+        "nutrition": nutrition
+    }
 }
 
-module.exports = { processText };
+module.exports = { processText, refineLookup, summarize };

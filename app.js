@@ -52,7 +52,7 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
     app.use(express.json());
 
     // Parse form data
-    app.use(express.urlencoded({extended: false}));
+    app.use(express.urlencoded({extended: true}));
 
     // CSRF protection
     app.use(csrfProtection);

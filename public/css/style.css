@@ -1,3 +1,82 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: linen;
+    color: maroon;
+}
+
+button {
+    font-size: medium;
+    padding: 10px;
+    border: 2px solid lightslategrey;
+    border-radius: 15px;
+    margin: auto;
+}
+
+.main-input {
+    background-color: ivory;
+    border: 2px solid lightslategrey;
+    border-radius: 10px;
+}
+
+.items-input-table {
+}
+.items-input-table table {
+    width: 80%;
+    min-width: 800px;
+    table-layout: fixed; /* Ensures strict width adherence */
+    border-collapse: separate; /* Often more reliable for sticky than collapse */
+}
+.items-input-table th {
+    font-size: small;
+    vertical-align: top;
+    overflow-wrap: break-word;
+    word-wrap: break-word; /* Legacy support */
+
+    /* Enable automatic hyphenation */
+    hyphens: auto;
+    -webkit-hyphens: auto; /* Safari/Chrome */
+    -moz-hyphens: auto;    /* Firefox */
+    -ms-hyphens: auto;     /* Edge/IE */
+
+    /* Optional: Prevent too many short fragments */
+    hyphenate-limit-chars: 10 5 5; /* Min 6 chars, 3 before break, 3 after */
+}
+.items-input-table .nutrient-amount {
+    text-align: right;
+    min-width: 90px;
+}
+.sticky-column {
+    z-index: 2;
+}
+.select-column {
+    left: 0;
+    width: 300px;
+    min-width: 300px;
+}
+.amount-column {
+    left: 300px;
+    width: 90px;
+}
+.amount-column input {
+    background-color: ivory;
+    border: 2px solid lightslategrey;
+    border-radius: 10px;
+    text-align: right;
+    width: 100%;
+    max-width: 90px;
+    box-sizing: border-box; /* Includes padding/border in width */
+    padding: 3px; /* Ensure padding doesn't exceed box */
+}
+
+.select-column select {
+    background-color: ivory;
+    border: 2px solid lightslategrey;
+    border-radius: 10px;
+    padding: 3px;
+    width: 90%;
+}
+
 .nutrient-2 {
     display: none;
 }
+

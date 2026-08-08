@@ -1,29 +1,71 @@
 <div>
-    <h4>
-        Breakdown:
-    </h4>
     <div>
-        <table>
-            <thead>
-                <th>fdcId</th>
-                <th>Description</th>
-                <th>Amount in Grams</th>
+        <div class="formdiv">
+            <form action="/refresh" method="post">
+                <div class="messageline">
+                    <% if (locals.message) { %>
+                        <p>
+                            <%= message %>
+                        </p>
+                    <% } %>
+                </div>
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+                <div class="items-input-table">
+                    <table>
+                        <thead>
+                            <th class="sticky-column select-column">Description</th>
+                            <th class="sticky-column amount-column">Amount (g)</th>
+                            <% for (nutrientId of nutrientOrder) { %>
+                                <th class="nutrient-<%= nutrients[nutrientId].detailLevel %>"><%- nutrients[nutrientId].name %></th>
+                            <% } %>
+                        </thead>
+                        <tbody>
+                            <% for ([index, component] of summary.itemized.entries()) { %>
+                                <tr>
+                                    <td class="sticky-column select-column">
+                                        <select name="foodRows[<%= index %>][select]" id="select_<%= index %>">
+                                            <% for ( item of queryGroups[index].fdcIds ) { %>
+                                                <option value="<%= item[0] %>" <%- (item[0] === component.fdcId) ? "selected" : "" %>>
+                                                    <%= item[0] %> &mdash; <%= item[1] %>
+                                                </option>
+                                            <% } %>
+                                        </select>
+                                    </td>
+                                    <td class="sticky-column amount-column">
+                                        <input type="number"
+                                               step="any" min="0"
+                                               name="foodRows[<%= index %>][amount]"
+                                               value="<%= component.amount_in_grams %>">
+                                    </td>
+                                    <% for (nutrientId of nutrientOrder) { %>
+                                        <td class="nutrient-amount nutrient-<%= nutrients[nutrientId].detailLevel %>"><%- (nutrientId in component) ? component[nutrientId].portionAmount : "" %></td>
+                                    <% } %>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+                <button type="submit">Refresh</button>
+            </form>
+        </div>
+        <div>
+            <p>
+                Your meal bzw. snack contains
+            </p>
+            <table>
                 <% for (nutrientId of nutrientOrder) { %>
-                    <th class="nutrient-<%= nutrients[nutrientId].detailLevel %>"><%- nutrients[nutrientId].name %></th>
+                    <% if (nutrientId in summary.totals) { %>
+                        <tr>
+                            <td><%= nutrients[nutrientId].name %>:</td>
+                            <td><%= summary.totals[nutrientId] %></td>
+                        </tr>
+                    <% } %>
                 <% } %>
-            </thead>
-            <tbody>
-                <% for (component of Object.keys(summary)) { %>
-                    <tr>
-                        <td><%= summary[component].fdcId %></td>
-                        <td><%= summary[component].description %></td>
-                        <td><%= summary[component].amount_in_grams %></td>
-                        <% for (nutrientId of nutrientOrder) { %>
-                            <td class="nutrient-<%= nutrients[nutrientId].detailLevel %>"><%- (nutrientId in summary[component]) ? summary[component][nutrientId].portionAmount : "" %></td>
-                        <% } %>
-                    </tr>
-                <% } %>
-            </tbody>
-        </table>
+            </table>
+            <p>
+                Enjoy your meal!
+            </p>
+        </div>
     </div>
 </div>
