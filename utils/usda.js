@@ -23,17 +23,46 @@ const nutrients = {
     "605": {"name": "trans fat (g)", "scale": 1, "detailLevel": 2} // trans fat (g)
 };
 
+const foodCategories = [
+    "Dairy and Egg Products",
+    "Cereal Grains and Pasta",
+    "Baked Products",
+    "Legumes and Legume Products",
+    "Beef Products",
+    "Pork Products",
+    "Poultry Products",
+    "Lamb, Veal, and Game Products",
+    "Finfish and Shellfish Products",
+    "Fruits and Fruit Juices",
+    "Vegetables and Vegetable Products",
+    "Nut and Seed Products",
+    "Sweets",
+    "Fats and Oils",
+    "Spices and Herbs",
+    "Beverages",
+    "Baby Foods",
+    "Fast Foods",
+    "Meals, Entrees, and Side Dishes",
+    "Soups, Sauces, and Gravies",
+    "American Indian/Alaska Native Foods"
+]
+
+
 const nutrientOrder = ["208", "203", "204", "291", "205", "269", "307", "601",
                                "209", "301", "303", "306", "401", "606", "605"];
 
-async function searchFoods(query, dataType=["Foundation"], number=3) {
+async function searchFoods(query, dataType=["Foundation"], foodCategory=null, number=3) {
     try {
 
-        const reqBody = JSON.stringify({
+        const reqObj = {
             "query": query,
             "dataType": dataType,
             "pageSize": number
-        });
+        };
+        if (foodCategory !== null) {
+            reqObj.foodCategory = foodCategory;
+        }
+        const reqBody = JSON.stringify(reqObj);
         console.log(reqBody);
 
         const stream = await fetch(searchUrl, {
@@ -90,4 +119,4 @@ async function lookupFoods(fdcIds) {
 }
 
 
-module.exports = { searchFoods, lookupFoods, nutrients, nutrientOrder };
+module.exports = { searchFoods, lookupFoods, foodCategories, nutrients, nutrientOrder };

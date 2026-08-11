@@ -1,6 +1,7 @@
 const Cerebras = require("@cerebras/cerebras_cloud_sdk");
 const { Groq } = require("groq-sdk");
 const jsonToMarkdown = require("json-to-markdown-table");
+const { foodCategories } = require("./usda");
 
 let llmClient;
 let llmModel;
@@ -57,7 +58,13 @@ async function analyze(text, verbose=false) {
         Convert the text into a LIST OF QUERY STRINGS designed to submit to the USDA FoodData Central API
         to retrieve nutritional information about the meal.
         
+        For each query also specify a FOOD CATEGORY from the following list: ${foodCategories}.
+        
         Be very explicit with the query: specify characteristics of the most likely item (e.g. for butter, specify 'dairy' and 'salted)
+        
+        If a word is essential to the query put a '+' before the word (without a space) to guarantee the USDA API will match it.
+        
+        If a sequence of words must occur together for semantic reasons, enclose the sequence in double quotes ("rolled oats").
         
         Note that each query is INDEPENDENT, so include all useful information in each query, for example: 
         a meal of 'beef hot dog on white roll' might be broken down into 'beef frankfurter sausage' and 'white bread hot dog roll or bun'
@@ -87,9 +94,13 @@ async function analyze(text, verbose=false) {
                                 },
                                 "query": {
                                     "type": "string"
+                                },
+                                "foodCategory": {
+                                    "type": "string",
+                                    "enum": foodCategories
                                 }
                             },
-                            "required": ["amount", "unit", "query"],
+                            "required": ["amount", "unit", "query", "foodCategory"],
                             "additionalProperties": false
                         },
                     },

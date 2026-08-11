@@ -16,15 +16,18 @@ button {
     background-color: ivory;
     border: 2px solid lightslategrey;
     border-radius: 10px;
+    max-width: 85%;
+    padding: 10px;
+    font-size: medium;
+    line-height: 1.5;
+    color: darkblue;
 }
 
 .items-input-table {
+    overflow-x: auto;
 }
 .items-input-table table {
-    width: 80%;
-    min-width: 800px;
     table-layout: fixed; /* Ensures strict width adherence */
-    border-collapse: separate; /* Often more reliable for sticky than collapse */
 }
 .items-input-table th {
     font-size: small;
@@ -43,7 +46,7 @@ button {
 }
 .items-input-table .nutrient-amount {
     text-align: right;
-    min-width: 90px;
+    min-width: 70px;
 }
 .sticky-column {
     z-index: 2;
@@ -52,10 +55,12 @@ button {
     left: 0;
     width: 300px;
     min-width: 300px;
+    max-width: 60vw;
 }
 .amount-column {
     left: 300px;
     width: 90px;
+    max-width: 30vw;
 }
 .amount-column input {
     background-color: ivory;
@@ -80,3 +85,14 @@ button {
     display: none;
 }
 
+.summary-table {
+    font-size: large;
+    color: darkred;
+}
+.summary-table td {
+    padding: 5px;
+}
+.summary-amount {
+    text-align: right;
+    font-weight: bold;
+}

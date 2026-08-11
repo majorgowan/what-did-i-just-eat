@@ -17,7 +17,7 @@
                             <th class="sticky-column select-column">Description</th>
                             <th class="sticky-column amount-column">Amount (g)</th>
                             <% for (nutrientId of nutrientOrder) { %>
-                                <th class="nutrient-<%= nutrients[nutrientId].detailLevel %>"><%- nutrients[nutrientId].name %></th>
+                                <th class="nutrient-<%= nutrients[nutrientId].detailLevel %> nutrient-amount"><%- nutrients[nutrientId].name %></th>
                             <% } %>
                         </thead>
                         <tbody>
@@ -49,7 +49,7 @@
                 <button type="submit">Refresh</button>
             </form>
         </div>
-        <div>
+        <div class="summary-table">
             <p>
                 Your meal bzw. snack contains
             </p>
@@ -58,7 +58,7 @@
                     <% if (nutrientId in summary.totals) { %>
                         <tr>
                             <td><%= nutrients[nutrientId].name %>:</td>
-                            <td><%= summary.totals[nutrientId] %></td>
+                            <td class="summary-amount"><%= summary.totals[nutrientId] %></td>
                         </tr>
                     <% } %>
                 <% } %>

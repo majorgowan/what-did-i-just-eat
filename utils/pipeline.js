@@ -36,13 +36,13 @@ async function lookupQueries(queryList) {
         const subLookup = []
         for (const dataType of [["SR Legacy"], ["Branded"]]) {
             const number = (dataType === "Branded") ? 2 : 4;
-            const data = await searchFoods(component.query, dataType, number);
+            const data = await searchFoods(component.query, dataType, component.foodCategory, number);
             subLookup.push(
                 data.foods.map((food) => {
                     return {
                         "fdcId": food.fdcId,
                         "description": food.description,
-                        "category": food.foodCategory,
+                        "foodCategory": food.foodCategory,
                         "dataType": food.dataType,
                         "query": component.query
                     }
