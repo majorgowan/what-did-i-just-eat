@@ -58,18 +58,24 @@ async function analyze(text, verbose=false) {
         Convert the text into a LIST OF QUERY STRINGS designed to submit to the USDA FoodData Central API
         to retrieve nutritional information about the meal.
         
-        For each query also specify a FOOD CATEGORY from the following list: ${foodCategories}.
+        For each query specify a FOOD CATEGORY from the following list: ${foodCategories}.
         
-        Be very explicit with the query: specify characteristics of the most likely item (e.g. for butter, specify 'dairy' and 'salted)
+        For each query specify and AMOUNT in the most natural or typical UNIT for that item
+        - the unit must be one of: ['g', 'ml', 'pieces']
         
-        If a word is essential to the query put a '+' before the word (without a space) to guarantee the USDA API will match it.
+        For each query specify whether it describes a BRANDED item (like "Kellogg's Corn Flakes").
         
-        If a sequence of words must occur together for semantic reasons, enclose the sequence in double quotes ("rolled oats").
+        The USDA API will return foods matching words in the query even if the words only represent ingredients or
+        non-essential elements of the food, so please be very explicit: specify characteristics 
+        of the most likely item even if not mentioned in the text.
+        
+        If a word is absolutely essential to the query put a '+' before the word (without a space) to guarantee the USDA API will match it.
+        Use the '+' for the defining word in the query (like 'apple' or 'bread' or 'oats') but not to descriptors (e.g. 'granny smith +apple').
         
         Note that each query is INDEPENDENT, so include all useful information in each query, for example: 
         a meal of 'beef hot dog on white roll' might be broken down into 'beef frankfurter sausage' and 'white bread hot dog roll or bun'
         
-        The response should follow the provided JSON schema.  Specify the most natural or typical UNIT for each amount (one of 'g', 'ml', 'pieces').
+        The response must strictly follow the provided JSON schema.  
         
     `;
 
@@ -98,9 +104,12 @@ async function analyze(text, verbose=false) {
                                 "foodCategory": {
                                     "type": "string",
                                     "enum": foodCategories
+                                },
+                                "branded": {
+                                    "type": "boolean"
                                 }
                             },
-                            "required": ["amount", "unit", "query", "foodCategory"],
+                            "required": ["amount", "unit", "query", "foodCategory", "branded"],
                             "additionalProperties": false
                         },
                     },
@@ -118,11 +127,15 @@ async function analyze(text, verbose=false) {
 }
 
 
-async function select(text, lookup, verbose=false) {
+async function select(text, queryGroups, verbose=false) {
     // process the USDA query results
 
-    let lookupTableString = jsonToMarkdown(lookup, Object.keys(lookup[0]));
-    console.log(lookupTableString);
+    let lookupTablesString = "";
+    for (const queryGroup of queryGroups) {
+       lookupTablesString += jsonToMarkdown(queryGroup.lookup, Object.keys(queryGroup.lookup[0]));
+       lookupTablesString += "\n\n";
+    }
+    console.log(lookupTablesString);
 
     const prompt = `
         The following is a text describing a MEAL or DRINK or SNACK:
@@ -133,21 +146,20 @@ async function select(text, lookup, verbose=false) {
         
         The text was used to generate a LIST OF QUERY STRINGS designed to submit to the USDA FoodData Central API.
         
-        The following table summarizes the query results from the USDA API:
+        The following tables summarize the query results from the USDA API:
         
-        ${lookupTableString}
+        ${lookupTablesString}
         
-        Please select from the query results a list of item ids (fdcId), descriptions (description), and amounts in grams that BEST REPRESENTS THE TEXT. 
+        The first column in each table represents the item id (fdcId) for the corresponding item.
         
-        In general select one item for each query string but if there are redundancies in the search results, pick only the best match.
+        For each table, provide a COMMA-DELIMITED LIST of (up to) 3 of the item ids (fdcIds)
+        for the 3 ITEMS MOST LIKELY TO MATCH THE FOOD DESCRIBED IN THE ORIGINAL TEXT.
         
-        All else being equal, prefer items with more complete nutritional data (numberOfNutrients) and more recent publication date.
+        The list of fdcIds should be IN ORDER FROM THE MOST LIKELY TO THE LEAST LIKELY MATCH.
         
-        All else being equal, prefer generic items (e.g. with dataType 'SR Legacy') to branded items (dataType 'Branded') unless the query specified a brand name.
+        Also, for each distinct query, estimate the AMOUNT IN GRAMS of the described food item.
         
-        Emphasize the nutritional characteristic of the item over the form, for example 'white bread' is more representative of a 'white bread roll' than a 'whole wheat roll'.
-        
-        The response should follow the provided JSON schema.  Include the original query string and description from the input table.
+        The response must follow the provided JSON schema.  Include the original query string from the table.
     `;
 
     const response_format = {
@@ -162,20 +174,17 @@ async function select(text, lookup, verbose=false) {
                         "items": {
                             "type": "object",
                             "properties": {
-                                "fdcId": {
-                                    "type": "number"
-                                },
-                                "query": {
+                                "fdcIds": {
                                     "type": "string"
                                 },
-                                "description": {
+                                "query": {
                                     "type": "string"
                                 },
                                 "amount_in_grams": {
                                     "type": "number"
                                 }
                             },
-                            "required": ["fdcId", "query", "description", "amount_in_grams"],
+                            "required": ["fdcIds", "query", "amount_in_grams"],
                             "additionalProperties": false
                         },
                     },
@@ -189,7 +198,7 @@ async function select(text, lookup, verbose=false) {
 
     if (verbose) console.log(prompt);
 
-    return await askLlm(prompt, response_format);
+    return await askLlm(prompt, response_format, 0.1, 4096);
 }
 
 

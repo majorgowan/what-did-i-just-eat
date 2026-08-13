@@ -63,7 +63,6 @@ async function searchFoods(query, dataType=["Foundation"], foodCategory=null, nu
             reqObj.foodCategory = foodCategory;
         }
         const reqBody = JSON.stringify(reqObj);
-        console.log(reqBody);
 
         const stream = await fetch(searchUrl, {
             "method": "POST",

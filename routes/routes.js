@@ -17,13 +17,9 @@ router.post("/", async (req, res) => {
     req.session.text = text;
 
     // get nutritional data for all alternative items
-    const { lookup, queryGroups, nutrition } = await processText(text);
+    const { refined, queryGroups, nutrition } = await processText(text);
     req.session.nutrition = nutrition;
-    req.session.queryGroupd = queryGroups;
-
-    // get AI selection (select from items and set amounts)
-    const refined = await refineLookup(text, lookup);
-    // console.log(JSON.stringify(refined, null, 2));
+    req.session.queryGroups = queryGroups;
 
     // console.log(queryGroups);
 
@@ -51,12 +47,12 @@ router.post("/refresh", async (req, res) => {
 
     // get nutrition data from session
     const nutrition = req.session.nutrition;
-    const queryGroups = req.session.queryGroupd;
+    const queryGroups = req.session.queryGroups;
 
     // get selection from the form body
     const refined = {
         "fdcItems": foodRows.map(foodRow => ({
-            "fdcId": Number(foodRow.select),
+            "fdcIds": [Number(foodRow.select)],
             "amount_in_grams": Number(foodRow.amount)
         }))
     };
